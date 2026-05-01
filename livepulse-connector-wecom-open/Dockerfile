@@ -1,0 +1,36 @@
+# 使用官方OpenJDK运行时
+#FROM eclipse-temurin:17.0.17_10-jdk-ubi10-minimal
+FROM eclipse-temurin:17.0.18_8-jdk-noble
+
+  # 设置工作目录
+WORKDIR /data/app
+
+  # 复制本地打包好的JAR文件到容器
+COPY target/livepulse-connector-wecom-open.jar app.jar
+#COPY livepulse-connector-wecom-open.jar app.jar
+
+
+  # 健康检查
+# HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+# CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+  # 暴露端口
+EXPOSE 23003
+
+# 设置 JVM 参数和 Spring Boot 启动参数 服务器上这些参数配置在 .env 文件中 防止容器push时暴漏密码
+
+# 构建完整的启动命令（前台运行，不使用 nohup/&）
+#CMD ["sh", "-c", "java $JAVA_OPTS \
+#  -Dspring.profiles.active=$SPRING_PROFILES_ACTIVE \
+#  -Dspring.cloud.nacos.server-addr=$SPRING_CLOUD_NACOS_SERVER_ADDR \
+#  -Dspring.cloud.nacos.discovery.server-addr=$SPRING_CLOUD_NACOS_SERVER_ADDR \
+#  -Dspring.cloud.nacos.config.group=$SPRING_CLOUD_NACOS_CONFIG_GROUP \
+#  -Dspring.cloud.nacos.discovery.group=$SPRING_CLOUD_NACOS_DISCOVERY_GROUP \
+#  -Dspring.cloud.nacos.config.namespace=$SPRING_CLOUD_NACOS_CONFIG_NAMESPACE \
+#  -Dspring.cloud.nacos.discovery.namespace=$SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE \
+#  -Dspring.cloud.nacos.username=$SPRING_CLOUD_NACOS_USERNAME \
+#  -Dspring.cloud.nacos.password=$SPRING_CLOUD_NACOS_PASSWORD \
+#  -jar app.jar"]
+
+CMD ["sh", "-c", "java $JAVA_OPTS \
+  -jar app.jar"]

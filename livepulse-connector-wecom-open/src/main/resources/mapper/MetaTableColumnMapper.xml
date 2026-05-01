@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cs.mapper.MetaTableColumnMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.cs.entity.MetaTableColumn">
+        <id column="table_column_id" property="tableColumnId" />
+        <result column="table_id" property="tableId" />
+        <result column="table_column_name" property="tableColumnName" />
+        <result column="table_column_alias" property="tableColumnAlias" />
+        <result column="comment" property="comment" />
+        <result column="is_pk" property="isPk" />
+        <result column="data_type" property="dataType" />
+        <result column="short_data_type" property="shortDataType" />
+        <result column="data_type_name" property="dataTypeName" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        table_column_id, table_id, table_column_name, table_column_alias, comment, is_pk, data_type, short_data_type, data_type_name
+    </sql>
+
+</mapper>

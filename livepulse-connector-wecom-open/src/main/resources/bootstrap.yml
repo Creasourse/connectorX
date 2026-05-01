@@ -1,0 +1,108 @@
+server:
+  port: 23003
+
+spring:
+  application:
+    name: wecom-open-connector-server
+  config:
+    import:
+      - optional:nacos:${spring.application.name}-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}?group=cs
+      - optional:nacos:conn-client-base-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}?group=cs
+  cloud:
+    # 注册指定的IP到nacos中, 本地debug使用
+    #    inetutils:
+    #      preferred-networks: 2.0.1.1
+    nacos:
+      discovery:
+        server-addr: ${NACOS_HOST:localhost}:${NACOS_PORT:8848}
+        namespace: ${NACOS_NAMESPACE:cs}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:123456}
+        group: cs
+        enabled: true
+      config:
+        server-addr: ${NACOS_HOST:localhost}:${NACOS_PORT:8848}
+        namespace: ${NACOS_NAMESPACE:cs}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:123456}
+        group: cs
+        file-extension: properties
+        extension-configs:
+
+  profiles:
+    active: ${PROFILES_ACTIVE:dev}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+  health:
+    redis:
+      enabled: false
+
+logging:
+  config: classpath:logback-custom.xml
+  level:
+    org:
+      springframework:
+        security: info
+
+
+
+# 企业微信调度任务配置
+wecom:
+  scheduled:
+    # 是否启用调度任务
+    enabled: true
+
+    # 部门+员工信息同步配置
+    department-and-employee:
+      enabled: true
+      # Cron表达式：每天凌晨2点执行
+      cron: "0 0 2 * * ?"
+      # 初始延迟：60秒
+      initial-delay: 60
+      # 固定延迟：秒（cron为空时生效）
+      fixed-delay: 3600
+
+    # 外部联系人同步配置
+    external-contact:
+      enabled: true
+      # Cron表达式：每天凌晨3点执行
+      cron: "0 0 3 * * ?"
+      # 初始延迟：120秒
+      initial-delay: 120
+      # 固定延迟：秒
+      fixed-delay: 7200
+
+    # 客户群同步配置
+    customer-group:
+      enabled: true
+      # Cron表达式：每天凌晨4点执行
+      cron: "0 0 4 * * ?"
+      # 初始延迟：180秒
+      initial-delay: 180
+      # 固定延迟：秒
+      fixed-delay: 10800
+
+    # 企业标签库同步配置
+    corp-tag:
+      enabled: true
+      # Cron表达式：每天凌晨5点执行
+      cron: "0 0 5 * * ?"
+      # 初始延迟：240秒
+      initial-delay: 240
+      # 固定延迟：秒
+      fixed-delay: 14400
+

@@ -1,0 +1,69 @@
+server:
+  port: 24001
+
+spring:
+  application:
+    name: manager-conn-client-server
+  config:
+    import:
+      - optional:nacos:${spring.application.name}-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}?group=cs
+      - optional:nacos:conn-client-base-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}?group=cs
+  cloud:
+    # 注册指定的IP到nacos中, 本地debug使用
+#    inetutils:
+#      preferred-networks: 2.0.1.1
+    nacos:
+      discovery:
+        server-addr: ${NACOS_HOST:locahost}:${NACOS_PORT:8848}
+        namespace: ${NACOS_NAMESPACE:cs}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:123456}
+        group: cs
+        enabled: true
+      config:
+        server-addr: ${NACOS_HOST:locahost}:${NACOS_PORT:8848}
+        namespace: ${NACOS_NAMESPACE:cs}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:123456}
+        group: cs
+        file-extension: properties
+        extension-configs:
+#          - data-id: connectorX-wecom-standard-custom-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
+#            group: ${spring.cloud.nacos.config.group}
+  profiles:
+    active: ${PROFILES_ACTIVE:dev}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+  health:
+    redis:
+      enabled: false
+
+logging:
+  config: classpath:logback-custom.xml
+  level:
+    org:
+      springframework:
+        security: info
+
+image:
+  # 文件路径 示例（ Windows配置D:/connectorX/uploadPath，Linux配置 /data/connectorX/uploadPath）
+  location: D:/connectorX/uploadPath
+
+http:
+  header:
+    token: 123456
+

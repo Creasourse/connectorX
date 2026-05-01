@@ -1,0 +1,97 @@
+services:
+  client-manager:
+    build:
+      context: ./client-manager/
+      dockerfile: Dockerfile
+      args:
+        - JAVA_OPTS=${JAVA_OPTS}
+        - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+        - SPRING_CLOUD_NACOS_SERVER_ADDR=${SPRING_CLOUD_NACOS_SERVER_ADDR}
+        - SPRING_CLOUD_NACOS_CONFIG_GROUP=${SPRING_CLOUD_NACOS_CONFIG_GROUP}
+        - SPRING_CLOUD_NACOS_DISCOVERY_GROUP=${SPRING_CLOUD_NACOS_DISCOVERY_GROUP}
+        - SPRING_CLOUD_NACOS_CONFIG_NAMESPACE=${SPRING_CLOUD_NACOS_CONFIG_NAMESPACE}
+        - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=${SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE}
+        - SPRING_CLOUD_NACOS_USERNAME=${SPRING_CLOUD_NACOS_USERNAME}
+        - SPRING_CLOUD_NACOS_PASSWORD=${SPRING_CLOUD_NACOS_PASSWORD}
+    image: client-manager-connetor:${TAG:-latest}
+    container_name: client-manager-connetor
+    ports:
+      - "${APP_PORT:-24001}:24001"
+    environment:
+      # SPRING_CLOUD_NACOS_DISCOVERY_IP 指定宿主机的IP，用于Nacos注册 这里为了跟其他非容器运行的应用IP保持通信IP一致
+      - JAVA_OPTS=${JAVA_OPTS}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_CLOUD_NACOS_SERVER_ADDR=${SPRING_CLOUD_NACOS_SERVER_ADDR}
+      - SPRING_CLOUD_NACOS_CONFIG_GROUP=${SPRING_CLOUD_NACOS_CONFIG_GROUP}
+      - SPRING_CLOUD_NACOS_DISCOVERY_GROUP=${SPRING_CLOUD_NACOS_DISCOVERY_GROUP}
+      - SPRING_CLOUD_NACOS_CONFIG_NAMESPACE=${SPRING_CLOUD_NACOS_CONFIG_NAMESPACE}
+      - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=${SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE}
+      - SPRING_CLOUD_NACOS_USERNAME=${SPRING_CLOUD_NACOS_USERNAME}
+      - SPRING_CLOUD_NACOS_PASSWORD=${SPRING_CLOUD_NACOS_PASSWORD}
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./volumes/app/log:/data/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  wecom-open:
+    build:
+      context: ./wecom-open/
+      dockerfile: Dockerfile
+      args:
+        - JAVA_OPTS=${JAVA_OPTS}
+        - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+        - SPRING_CLOUD_NACOS_SERVER_ADDR=${SPRING_CLOUD_NACOS_SERVER_ADDR}
+        - SPRING_CLOUD_NACOS_CONFIG_GROUP=${SPRING_CLOUD_NACOS_CONFIG_GROUP}
+        - SPRING_CLOUD_NACOS_DISCOVERY_GROUP=${SPRING_CLOUD_NACOS_DISCOVERY_GROUP}
+        - SPRING_CLOUD_NACOS_CONFIG_NAMESPACE=${SPRING_CLOUD_NACOS_CONFIG_NAMESPACE}
+        - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=${SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE}
+        - SPRING_CLOUD_NACOS_USERNAME=${SPRING_CLOUD_NACOS_USERNAME}
+        - SPRING_CLOUD_NACOS_PASSWORD=${SPRING_CLOUD_NACOS_PASSWORD}
+    image: wecom-open-connetor:${TAG:-latest}
+    container_name: wecom-open-connetor
+    ports:
+      - "${APP_PORT:-23003}:23003"
+    environment:
+      # SPRING_CLOUD_NACOS_DISCOVERY_IP 指定宿主机的IP，用于Nacos注册 这里为了跟其他非容器运行的应用IP保持通信IP一致
+      - JAVA_OPTS=${JAVA_OPTS}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_CLOUD_NACOS_SERVER_ADDR=${SPRING_CLOUD_NACOS_SERVER_ADDR}
+      - SPRING_CLOUD_NACOS_CONFIG_GROUP=${SPRING_CLOUD_NACOS_CONFIG_GROUP}
+      - SPRING_CLOUD_NACOS_DISCOVERY_GROUP=${SPRING_CLOUD_NACOS_DISCOVERY_GROUP}
+      - SPRING_CLOUD_NACOS_CONFIG_NAMESPACE=${SPRING_CLOUD_NACOS_CONFIG_NAMESPACE}
+      - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=${SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE}
+      - SPRING_CLOUD_NACOS_USERNAME=${SPRING_CLOUD_NACOS_USERNAME}
+      - SPRING_CLOUD_NACOS_PASSWORD=${SPRING_CLOUD_NACOS_PASSWORD}
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./volumes/app/log:/data/app/logs
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+
+
+volumes:
+  app-logs:
+
+networks:
+  app-network:
+    driver: bridge

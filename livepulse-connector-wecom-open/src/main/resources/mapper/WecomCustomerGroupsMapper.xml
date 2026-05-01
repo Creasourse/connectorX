@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cs.mapper.WecomCustomerGroupsMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.cs.entity.WecomCustomerGroups">
+        <id column="id" property="id" />
+        <result column="wecom_corp_id" property="wecomCorpId" />
+        <result column="chat_id" property="chatId" />
+        <result column="name" property="name" />
+        <result column="owner" property="owner" />
+        <result column="create_time" property="createTime" />
+        <result column="notice" property="notice" />
+        <result column="member_count" property="memberCount" />
+        <result column="admin_list" property="adminList" />
+        <result column="chat_announcement" property="chatAnnouncement" />
+        <result column="group_qrcode" property="groupQrcode" />
+        <result column="update_time" property="updateTime" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+</mapper>

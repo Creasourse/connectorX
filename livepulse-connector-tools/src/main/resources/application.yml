@@ -1,0 +1,22 @@
+
+
+# Docker Compose 配置
+docker:
+  compose:
+    # 默认的 docker-compose 文件目录
+    dir: ./docker-compose
+
+    # Docker Compose 命令格式
+    # v1: docker-compose (旧版本，兼容性好)
+    # v2: docker compose (新版本，Docker Desktop)
+    command: v2
+
+    # 管理模式
+    # compose: 使用 docker-compose 管理（需要 docker-compose.yml 文件）
+    # direct: 直接使用 docker 命令管理容器（不依赖文件）
+    mode: direct
+
+    # 要管理的容器名称前缀（direct 模式使用）
+    # 多个前缀用逗号分隔，留空则管理所有容器
+    managed-prefixes: wecom-,manager-,wecom-open-,client-manager-
+
