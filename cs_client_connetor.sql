@@ -276,7 +276,8 @@ CREATE TABLE "public"."local_connector" (
   "version" varchar(50) COLLATE "pg_catalog"."default",
   "create_time" timestamp(0),
   "update_time" timestamp(0),
-  "location_url" varchar(255) COLLATE "pg_catalog"."default"
+  "location_url" varchar(255) COLLATE "pg_catalog"."default",
+  "sketch_out" text COLLATE "pg_catalog"."default"
 )
 ;
 COMMENT ON COLUMN "public"."local_connector"."local_connector_id" IS '我的连接器ID';
@@ -292,6 +293,7 @@ COMMENT ON COLUMN "public"."local_connector"."version" IS '版本号';
 COMMENT ON COLUMN "public"."local_connector"."create_time" IS '创建时间';
 COMMENT ON COLUMN "public"."local_connector"."update_time" IS '更新时间';
 COMMENT ON COLUMN "public"."local_connector"."location_url" IS '存放路径';
+COMMENT ON COLUMN "public"."sketch_out"."location_url" IS '简要概述';
 COMMENT ON TABLE "public"."local_connector" IS '我的连接器';
 
 -- ----------------------------
