@@ -1405,3 +1405,10 @@ ALTER TABLE "public"."wecom_tag_groups" ADD CONSTRAINT "wecom_tag_groups_pkey" P
 
 -- 初始化脚本
 INSERT INTO conn_docker_service_enum (connector_name, service_name) VALUES('企业微信插件', 'wecom-open');
+
+-- 添加删除字段 默认为0
+ALTER TABLE public.local_connector ADD is_del int2 NULL;
+COMMENT ON COLUMN public.local_connector.is_del IS '0:未删除 1:删除';
+ALTER TABLE public.local_connector ALTER COLUMN is_del SET DEFAULT 0;
+
+

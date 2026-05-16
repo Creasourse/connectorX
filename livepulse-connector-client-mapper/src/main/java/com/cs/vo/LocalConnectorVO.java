@@ -1,9 +1,5 @@
 package com.cs.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.Version;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -96,4 +92,7 @@ public class LocalConnectorVO {
      */
     @Schema(description = "存放路径")
     private String locationUrl;
+
+    @Schema(description = "简要概述")
+    private String sketchOut;
 }

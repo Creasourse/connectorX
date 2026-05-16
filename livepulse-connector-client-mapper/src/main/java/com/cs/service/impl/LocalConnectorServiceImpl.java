@@ -66,6 +66,7 @@ public class LocalConnectorServiceImpl extends ServiceImpl<LocalConnectorMapper,
         Page<LocalConnector> page = Page.of(localConnectorPageParam.getCurrentPage(), localConnectorPageParam.getPageSize());
         LambdaQueryWrapper<LocalConnector> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.ge(LocalConnector::getConnectorId, 0);
+        queryWrapper.eq(LocalConnector::getIsDel, 0);
         if (!StringUtils.isEmpty(localConnectorPageParam.getConnectorName())) {
             queryWrapper.like(LocalConnector::getConnectorName, localConnectorPageParam.getConnectorName());
         }
@@ -149,7 +150,7 @@ public class LocalConnectorServiceImpl extends ServiceImpl<LocalConnectorMapper,
                 }
             }
         } catch (Exception e) {
-            log.error("查询流列表异常:{}", e);
+            System.out.println("查询流列表异常:" + e);
         }
         return Boolean.TRUE;
 

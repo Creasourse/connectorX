@@ -10,6 +10,7 @@ const home = 0,
   groupManage = 7,
   labelManage = 8,
   platformData = 9,
+  metadata = 9.5,
   chatai = 10,
   vueflow = 11,
   ganttastic = 12,
@@ -75,5 +76,6 @@ export {
   userManage,
   platformData,
   groupManage,
-  labelManage
+  labelManage,
+  metadata
 };

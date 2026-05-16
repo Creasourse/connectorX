@@ -125,6 +125,14 @@ public class LocalConnector extends Model<LocalConnector> {
     @Schema(description = "存放路径")
     private String locationUrl;
 
+    @TableField("sketch_out")
+    @Schema(description = "简要概述")
+    private String sketchOut;
+
+    @TableField("is_del")
+    @Schema(description = "是否删除 0:未删除 1:删除")
+    private Integer isDel;
+
     @Override
     public Serializable pkVal() {
         return this.localConnectorId;

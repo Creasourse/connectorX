@@ -20,6 +20,7 @@ const {
   columns,
   handleSearch,
   handleDetail,
+  handleRemoveApp,
   changeStatus,
   toMarket,
   onSizeChange,
@@ -104,50 +105,47 @@ onMounted(() => {
       <div
         v-for="(app, index) in pagedData"
         :key="index"
-        class="flex-bc rounded-lg border bg-white p-4 transition-shadow hover:shadow-md"
+        class="flex items-center gap-4 rounded-lg border bg-white p-4 transition-shadow hover:shadow-md"
       >
-        <div class="flex items-center gap-4">
-          <div
-            class="flex-c size-12 rounded-lg bg-linear-to-br from-purple-50 to-blue-50 text-2xl"
-          >
-            <img v-if="app.icon" :src="getUrl(app.icon)" class="icon-img" />
-            <span v-else class="icon-fallback">{{
-              app.connectorName?.[0] || "A"
-            }}</span>
-          </div>
-          <div class="flex-1">
-            <div class="flex items-center gap-2">
-              <h3 class="font-medium">{{ app.connectorName }}</h3>
-              <span class="text-xs text-gray-500">{{ app.version }}</span>
-              <span class="rounded bg-red-100 px-2 py-0.5 text-xs text-red-600"
-                >推荐</span
-              >
-            </div>
-            <p class="mt-1 text-sm text-gray-600">
-              {{ app.sketchOut || app.remark }}
-            </p>
-          </div>
-        </div>
-        <div class="flex items-center gap-6">
-          <span class="text-sm text-gray-600">{{
-            app.groupName || "插件"
+        <div
+          class="flex-c size-12 rounded-lg bg-linear-to-br from-purple-50 to-blue-50 text-2xl"
+        >
+          <img v-if="app.icon" :src="getUrl(app.icon)" class="icon-img" />
+          <span v-else class="icon-fallback">{{
+            app.connectorName?.[0] || "A"
           }}</span>
-          <el-switch
-            :model-value="app.dockerStatus === 'running'"
-            :loading="app.loading"
-            :disabled="app.loading"
-            inline-prompt
-            active-text="已启用"
-            inactive-text="已停止"
-            @change="changeStatus(app)"
-          />
-          <span
-            class="text-gray-400 transition-colors hover:text-gray-600 cursor-pointer"
-            @click="handleDetail(app)"
-          >
-            <IconifyIconOffline :icon="ArrowRightSLine" />
-          </span>
         </div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <h3 class="font-medium">{{ app.connectorName }}</h3>
+            <span class="text-xs text-gray-500">{{ app.version }}</span>
+            <span class="rounded bg-red-100 px-2 py-0.5 text-xs text-red-600"
+              >推荐</span
+            >
+          </div>
+          <p class="mt-1 text-sm text-gray-600 break-all line-clamp-3">
+            {{ app.sketchOut || app.remark }}
+          </p>
+        </div>
+        <span class="text-sm text-gray-600">{{ app.groupName || "插件" }}</span>
+        <el-switch
+          :model-value="app.dockerStatus === 'running'"
+          :loading="app.loading"
+          :disabled="app.loading"
+          inline-prompt
+          active-text="已启用"
+          inactive-text="已停止"
+          @change="changeStatus(app)"
+        />
+        <el-button link type="danger" @click="handleRemoveApp(app)"
+          >卸载</el-button
+        >
+        <span
+          class="text-gray-400 transition-colors hover:text-gray-600 cursor-pointer"
+          @click="handleDetail(app)"
+        >
+          <IconifyIconOffline :icon="ArrowRightSLine" />
+        </span>
       </div>
     </div>
 
@@ -171,9 +169,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .app-manage-list {
-  padding: 24px 28px;
   min-height: 100%;
-  background: var(--el-bg-color-page);
 }
 
 .list-header {
@@ -255,7 +251,8 @@ onMounted(() => {
 }
 
 .table-wrapper {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
   :deep(.op-btn) {
     display: inline-flex;

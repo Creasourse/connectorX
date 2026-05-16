@@ -48,6 +48,8 @@ import RiGroupLine from "~icons/ri/group-line?raw";
 import RiBarChartLine from "~icons/ri/bar-chart-line?raw";
 import RiBarChartGroupedLine from "~icons/ri/bar-chart-grouped-line?raw";
 import RiPriceTagLine from "~icons/ri/price-tag-3-line?raw";
+import RiDatabase2Line from "~icons/ri/database-2-line?raw";
+import RiLinksLine from "~icons/ri/links-line?raw";
 
 const icons = [
   // Element Plus Icon: https://github.com/element-plus/element-plus-icons
@@ -94,7 +96,9 @@ const icons = [
   ["ri/group-line", RiGroupLine],
   ["ri/bar-chart-line", RiBarChartLine],
   ["ri/bar-chart-grouped-line", RiBarChartGroupedLine],
-  ["ri/price-tag-3-line", RiPriceTagLine]
+  ["ri/price-tag-3-line", RiPriceTagLine],
+  ["ri/database-2-line", RiDatabase2Line],
+  ["ri/links-line", RiLinksLine]
 ];
 
 // 本地菜单图标，后端在路由的 icon 中返回对应的图标字符串并且前端在此处使用 addIcon 添加即可渲染菜单图标

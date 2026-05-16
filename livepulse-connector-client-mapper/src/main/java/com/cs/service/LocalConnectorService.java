@@ -20,4 +20,5 @@ public interface LocalConnectorService extends IService<LocalConnector> {
     PageResult<LocalConnectorVO> pageList(LocalConnectorPageParam localConnectorPageParam) throws CommonException;
 
     Boolean syncConnector() throws CommonException;
+
 }

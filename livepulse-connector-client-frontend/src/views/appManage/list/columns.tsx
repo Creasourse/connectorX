@@ -5,6 +5,7 @@ import {
   type AppItem,
   syncConnector,
   getAppList,
+  removeApp,
   getComposeDir,
   getServiceName,
   startDockerCompose,
@@ -305,10 +306,12 @@ export function useColumns() {
       switch (app.dockerStatus) {
         case "running":
           await stopDockerCompose(params);
+          getList();
           break;
         case "paused":
         case "exited":
           await startDockerCompose(params);
+          getList();
           break;
 
         default:
@@ -316,7 +319,29 @@ export function useColumns() {
       }
     } catch (error) {}
     app.loading = false;
-    getList();
+  };
+
+  const handleRemoveApp = (app: AppItem) => {
+    ElMessageBox.confirm(
+      `确认卸载「${app.connectorName}」？卸载后需重新安装。`,
+      "卸载确认",
+      {
+        confirmButtonText: "确认卸载",
+        cancelButtonText: "取消",
+        type: "warning"
+      }
+    )
+      .then(() => {
+        removeApp(app.localConnectorId).then(res => {
+          if (res.success) {
+            ElMessage.success("卸载成功");
+            getList();
+          }
+        });
+      })
+      .catch(() => {
+        // 取消卸载
+      });
   };
 
   return {
@@ -333,6 +358,7 @@ export function useColumns() {
     pagedData,
     handleSearch,
     handleDetail,
+    handleRemoveApp,
     changeStatus,
     toMarket,
     onSizeChange,

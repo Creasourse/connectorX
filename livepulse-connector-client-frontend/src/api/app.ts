@@ -34,6 +34,7 @@ export interface AppItem {
   version?: string;
   titile?: string;
   locationUrl?: string;
+  localConnectorId?: number;
   developUserId?: number;
   developUserName?: string;
   avatar?: string;
@@ -125,6 +126,11 @@ export const syncConnector = (data?: object) =>
 // app列表
 export const getAppList = (data?: object) =>
   http.request<ResultTable>("post", "/api/local/connector/pageList", { data });
+export const removeApp = (localConnectorId?: string | number) =>
+  http.request<ResultSingle>(
+    "get",
+    `/api/local/connector/remove/${localConnectorId}`
+  );
 // 标签列表
 export const getLabelEnum = (data?: object) =>
   http.request<ResultSingle>("post", "/platform-api/connPlugin/labelEnum", {
