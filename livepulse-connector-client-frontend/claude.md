@@ -13,7 +13,7 @@ paths: "**/*.vue,**/*.js,**/*.ts" # 仅对Vue、JS、TS文件生效
     - /src/api：接口请求（按模块拆分，如 /src/api/user.js 对应用户接口）
     - /src/store：Pinia 状态管理（按模块划分，禁止单一store过大）
     - /src/utils：工具函数（通用工具放此处，如请求拦截、权限判断）
-3.  接口基准地址：开发环境 http://117.50.204.138:24001/api
+3.  接口基准地址：开发环境 http://localhost:24001/api
 
 ## 二、项目约束（Why）
 

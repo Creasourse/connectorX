@@ -8,6 +8,17 @@ import {
   pathResolve,
   __APP_INFO__
 } from "./build/utils";
+import { proxyList } from "./src/config/proxy";
+
+const proxy = {};
+proxyList.forEach(({ key, target }) => {
+  const rewrite = path => path.replace(new RegExp(`^${key}`), "");
+  proxy[key] = {
+    target,
+    changeOrigin: true,
+    rewrite
+  };
+});
 
 export default ({ mode }: ConfigEnv): UserConfigExport => {
   const { VITE_CDN, VITE_PORT, VITE_COMPRESSION, VITE_PUBLIC_PATH } =
@@ -24,23 +35,7 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       port: VITE_PORT,
       host: "0.0.0.0",
       // 本地跨域代理 https://cn.vitejs.dev/config/server-options.html#server-proxy
-      proxy: {
-        "/api": {
-          target: "http://117.50.204.138:24001", // "http://clinet-connectorx.livepulse.com.cn/api",
-          changeOrigin: true,
-          rewrite: path => path.replace(/^\/api/, "")
-        },
-        "/platform-api": {
-          target: "http://connectorx.livepulse.com.cn/api",
-          changeOrigin: true,
-          rewrite: path => path.replace(/^\/platform-api/, "")
-        },
-        "/wecom-open": {
-          target: "http://117.50.204.138:23003",
-          changeOrigin: true,
-          rewrite: path => path.replace(/^\/wecom-open/, "")
-        }
-      },
+      proxy,
       // 预热文件以提前转换和缓存结果，降低启动期间的初始页面加载时长并防止转换瀑布
       warmup: {
         clientFiles: ["./index.html", "./src/{views,components}/*"]

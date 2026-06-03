@@ -35,6 +35,16 @@ const ICON_COLORS = [
   { bg: "#f1f5f9", color: "#475569" }
 ];
 
+export const DOCKER_STATUS_MAP = {
+  created: "容器已被创建，但尚未启动",
+  restarting: "容器正在重启中",
+  running: "容器正在运行",
+  removing: "容器正在被删除",
+  paused: "容器已被暂停",
+  exited: "容器已停止运行",
+  dead: "容器死亡"
+};
+
 export function useColumns() {
   const router = useRouter();
   const loading = ref(false);
@@ -48,8 +58,12 @@ export function useColumns() {
   const pagedData = ref<AppItem[]>([]);
 
   const handleDetail = (row: AppItem) => {
-    sessionStorage.setItem("plugin-detail", JSON.stringify(row));
-    router.push(`/appManage/detail?id=${row.connectorId}`);
+    if (row.dockerStatus === "running") {
+      sessionStorage.setItem("plugin-detail", JSON.stringify(row));
+      router.push(`/appManage/detail?id=${row.connectorId}`);
+    } else {
+      ElMessage.error("请先启动插件，再进行插件配置");
+    }
   };
 
   const columns: TableColumnList = [
@@ -322,6 +336,10 @@ export function useColumns() {
   };
 
   const handleRemoveApp = (app: AppItem) => {
+    if (["running"].includes(app.dockerStatus)) {
+      ElMessage.warning("请停用插件后再卸载");
+      return;
+    }
     ElMessageBox.confirm(
       `确认卸载「${app.connectorName}」？卸载后需重新安装。`,
       "卸载确认",
@@ -345,6 +363,7 @@ export function useColumns() {
   };
 
   return {
+    DOCKER_STATUS_MAP,
     loading,
     searchKeyword,
     statusFilter,

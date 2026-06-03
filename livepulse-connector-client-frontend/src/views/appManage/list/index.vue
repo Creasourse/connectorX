@@ -8,6 +8,7 @@ import ArrowRightSLine from "~icons/ri/arrow-right-s-line";
 defineOptions({ name: "AppManageList" });
 
 const {
+  DOCKER_STATUS_MAP,
   loading,
   searchKeyword,
   statusFilter,
@@ -137,15 +138,31 @@ onMounted(() => {
           inactive-text="已停止"
           @change="changeStatus(app)"
         />
-        <el-button link type="danger" @click="handleRemoveApp(app)"
-          >卸载</el-button
+        <el-tooltip
+          content="请停用插件后再卸载"
+          placement="top"
+          :disabled="app.dockerStatus !== 'running'"
         >
-        <span
-          class="text-gray-400 transition-colors hover:text-gray-600 cursor-pointer"
-          @click="handleDetail(app)"
+          <el-button
+            link
+            type="danger"
+            :disabled="app.dockerStatus === 'running'"
+            @click="handleRemoveApp(app)"
+            >卸载</el-button
+          >
+        </el-tooltip>
+        <el-tooltip
+          content="请启用插件后再进行配置"
+          placement="top"
+          :disabled="app.dockerStatus === 'running'"
         >
-          <IconifyIconOffline :icon="ArrowRightSLine" />
-        </span>
+          <span
+            class="text-gray-400 transition-colors hover:text-gray-600 cursor-pointer"
+            @click="handleDetail(app)"
+          >
+            <IconifyIconOffline :icon="ArrowRightSLine" />
+          </span>
+        </el-tooltip>
       </div>
     </div>
 
