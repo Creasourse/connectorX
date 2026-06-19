@@ -311,28 +311,40 @@ export function useColumns() {
   };
 
   const changeStatus = async (app: AppItem) => {
+    // 只更新当前操作的连接器，避免影响其他列表项
+    const originalStatus = app.dockerStatus;
     app.loading = true;
+
     const params = {
       composeDir: composeDir.value,
       serviceName: app.serviceName
     };
+
     try {
-      switch (app.dockerStatus) {
+      switch (originalStatus) {
         case "running":
           await stopDockerCompose(params);
-          getList();
+          // 停用成功后，只更新当前连接器的状态
+          app.dockerStatus = "exited";
           break;
         case "paused":
         case "exited":
           await startDockerCompose(params);
-          getList();
+          // 启用成功后，只更新当前连接器的状态
+          app.dockerStatus = "running";
           break;
-
         default:
+          console.warn("未知的Docker状态:", originalStatus);
           break;
       }
-    } catch (error) {}
-    app.loading = false;
+    } catch (error) {
+      console.error("切换连接器状态失败:", error);
+      // 如果切换失败，恢复原始状态
+      app.dockerStatus = originalStatus;
+      ElMessage.error("切换状态失败，请稍后重试");
+    } finally {
+      app.loading = false;
+    }
   };
 
   const handleRemoveApp = (app: AppItem) => {

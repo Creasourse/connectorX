@@ -171,13 +171,21 @@
               增量同步
             </el-checkbox>
             <el-select
-              v-model="formData.incrementalField"
-              class="inline-select"
-              placeholder="增量字段"
+              v-model="formData.incrementFields"
+              class="inline-multiple-select"
+              placeholder="选择增量同步字段"
               size="small"
+              multiple
+              collapse-tags
+              collapse-tags-tooltip
+              :disabled="!formData.incrementalSync"
             >
-              <el-option label="最后更新时间" value="updatedTime" />
-              <el-option label="创建时间" value="createdTime" />
+              <el-option
+                v-for="field in dateFields"
+                :key="field.fieldId"
+                :label="field.fieldName"
+                :value="field.fieldId"
+              />
             </el-select>
             <el-select
               v-model="formData.firstSync"
@@ -350,6 +358,7 @@ const formData = reactive({
   updateDetection: "hybrid",
   incrementalSync: true,
   incrementalField: "updatedTime",
+  incrementFields: [] as string[],
   firstSync: "7days",
   recordConflict: "feishu",
   fieldConflict: "merge",
@@ -387,6 +396,23 @@ const fieldList = ref<Array<{
 
 // 当前选中表格的飞书 table_id
 const currentFeishuTableId = ref<string>("");
+
+// 日期类型字段列表（用于增量同步）
+const dateFields = computed(() => {
+  // 飞书字段类型：5-日期时间, 15-日期, 以及其他可能的日期类型
+  // 也包括 createdTime, modifiedTime 等系统字段
+  return fieldList.value.filter(field => {
+    const fieldType = field.fieldType;
+    // 日期时间类型：5 (dateTime), 15 (date)
+    // 系统字段：createdTime, modifiedTime
+    return fieldType === 5 || fieldType === 15 ||
+           field.fieldName === '创建时间' ||
+           field.fieldName === '修改时间' ||
+           field.fieldName === '最后更新时间' ||
+           field.uiType === 'dateTime' ||
+           field.uiType === 'date';
+  });
+});
 
 // 加载多维表格列表
 const loadBitableList = async () => {
@@ -618,7 +644,13 @@ const loadTaskDetail = async (taskId: number) => {
 
       // 增量同步字段
       formData.incrementalField = task.incrementalField || "updatedTime";
+      formData.incrementFields = task.incrementFields || [];
       formData.firstSync = task.firstSync || "7days";
+
+      // 如果有增量字段列表，确保加载字段信息后再设置
+      if (task.incrementFields && task.incrementFields.length > 0) {
+        formData.incrementFields = task.incrementFields; // 直接使用字段ID列表
+      }
 
       // 性能设置
       formData.batchSize = task.batchSize || 100;
@@ -750,6 +782,13 @@ const handleSave = async () => {
       updateDetection: formData.updateDetection,
       incrementalSync: formData.incrementalSync,
       incrementalField: formData.incrementalField,
+      incrementFields: formData.incrementFields.length > 0 ? formData.incrementFields.map(fieldId => {
+        const field = fieldList.value.find(f => f.fieldId === fieldId);
+        return {
+          increField: fieldId,
+          increFieldName: field ? field.fieldName : fieldId
+        };
+      }) : [],
       firstSync: formData.firstSync,
 
       // 冲突解决策略
@@ -958,6 +997,11 @@ const handleToggleEnabled = async () => {
       .inline-select {
         margin-left: 12px;
         width: 180px;
+      }
+
+      .inline-multiple-select {
+        margin-left: 12px;
+        width: 300px;
       }
     }
   }

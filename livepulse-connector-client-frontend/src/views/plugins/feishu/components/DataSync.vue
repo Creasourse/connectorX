@@ -80,17 +80,30 @@
             </div>
           </div>
 
-          <!-- 同步信息 -->
-          <div class="sync-info">
-            <div class="info-item">
-              <span class="info-label">{{
-                task.status === "active" ? "最后同步" : "下次同步"
-              }}：</span>
-              <span class="info-value">{{ task.syncTime }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">已同步：</span>
-              <span class="info-value">{{ task.syncedCount }}条</span>
+          <!-- 同步统计信息 -->
+          <div class="sync-stats">
+            <div class="stat-group">
+              <div class="stat-item cumulative">
+                <div class="stat-label">累计同步</div>
+                <div class="stat-value">{{ task.syncedCount }}条</div>
+              </div>
+              <div class="stat-item current" v-if="task.currentSyncData && task.currentSyncData.recordCount > 0">
+                <div class="stat-label">本次同步</div>
+                <div class="stat-value">
+                  <span :class="{
+                    'success': task.currentSyncData.failedCount === 0,
+                    'partial': task.currentSyncData.failedCount > 0 && task.currentSyncData.successCount > 0,
+                    'failed': task.currentSyncData.successCount === 0
+                  }">
+                    {{ task.currentSyncData.successCount }}/{{ task.currentSyncData.recordCount }}条
+                  </span>
+                </div>
+                <div class="stat-duration">{{ task.currentSyncData.duration }}秒</div>
+              </div>
+              <div class="stat-item time">
+                <div class="stat-label">{{ task.status === "active" ? "最后同步" : "同步状态" }}</div>
+                <div class="stat-value">{{ formatSyncTime(task.syncTime) }}</div>
+              </div>
             </div>
           </div>
         </div>
@@ -119,8 +132,8 @@
       width="600px"
     >
       <div v-if="currentTask" class="task-detail">
-        <el-descriptions :column="1" border>
-          <el-descriptions-item label="任务名称">
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="任务名称" :span="2">
             {{ currentTask.name }}
           </el-descriptions-item>
           <el-descriptions-item label="目标表格">
@@ -138,10 +151,39 @@
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="最后同步时间">
-            {{ currentTask.syncTime }}
+            {{ formatSyncTime(currentTask.syncTime) }}
           </el-descriptions-item>
-          <el-descriptions-item label="已同步记录数">
-            {{ currentTask.syncedCount }} 条
+          <el-descriptions-item label="累计同步记录数">
+            <div class="detail-stat-item">
+              <el-tag type="info" size="small">{{ currentTask.syncedCount }} 条</el-tag>
+            </div>
+          </el-descriptions-item>
+          <el-descriptions-item label="本次同步记录数" v-if="currentTask.currentSyncData && currentTask.currentSyncData.recordCount > 0" :span="2">
+            <div class="sync-result-detail-expanded">
+              <div class="result-main">
+                <el-tag
+                  :type="currentTask.currentSyncData.failedCount === 0 ? 'success' :
+                        currentTask.currentSyncData.successCount > 0 ? 'warning' : 'danger'"
+                  size="default"
+                >
+                  {{ currentTask.currentSyncData.successCount }}/{{ currentTask.currentSyncData.recordCount }} 条
+                </el-tag>
+                <div class="result-details">
+                  <span class="detail-item">
+                    <i class="el-icon-success">✓</i>
+                    成功: {{ currentTask.currentSyncData.successCount }}
+                  </span>
+                  <span class="detail-item" v-if="currentTask.currentSyncData.failedCount > 0">
+                    <i class="el-icon-error">✗</i>
+                    失败: {{ currentTask.currentSyncData.failedCount }}
+                  </span>
+                  <span class="detail-item">
+                    <i class="el-icon-time">⏱</i>
+                    耗时: {{ currentTask.currentSyncData.duration }}秒
+                  </span>
+                </div>
+              </div>
+            </div>
           </el-descriptions-item>
         </el-descriptions>
       </div>
@@ -170,7 +212,8 @@ import {
   executeFeishuDataSync,
   toggleFeishuDataSyncEnabled,
   deleteFeishuDataSync,
-  getFeishuDataSyncDetail
+  getFeishuDataSyncDetail,
+  getFeishuSyncLogPageList
 } from "@/api/feishu";
 import type { SyncTask } from "../types";
 
@@ -229,6 +272,30 @@ const getSyncDirectionText = (direction: string) => {
   );
 };
 
+// 格式化同步时间
+const formatSyncTime = (timeStr: string) => {
+  if (!timeStr || timeStr === "未同步") return "未同步";
+
+  try {
+    const date = new Date(timeStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "刚刚";
+    if (diffMins < 60) return `${diffMins}分钟前`;
+    if (diffHours < 24) return `${diffHours}小时前`;
+    if (diffDays < 7) return `${diffDays}天前`;
+
+    // 超过7天显示具体日期
+    return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  } catch (error) {
+    return timeStr;
+  }
+};
+
 // 加载任务列表
 const loadTaskList = async () => {
   if (!props.config.feishuAppId) {
@@ -245,7 +312,7 @@ const loadTaskList = async () => {
     };
     const res = await getFeishuDataSyncPageList(params);
     if (res.success && res.data) {
-      taskList.value = (res.data.records || []).map((item: any) => ({
+      const tasks = (res.data.records || []).map((item: any) => ({
         id: item.id,
         name: item.syncName,
         tableName: item.tableName || "未命名",
@@ -259,6 +326,50 @@ const loadTaskList = async () => {
         // 保存完整原始数据，用于编辑时回显
         _rawData: item
       }));
+
+      // 为每个任务获取最新的同步记录（本次同步数据）
+      for (const task of tasks) {
+        try {
+          const logParams = {
+            pageNum: 1,
+            pageSize: 1,
+            feishuDataSyncId: task.id
+          };
+          const logRes = await getFeishuSyncLogPageList(logParams);
+          if (logRes.success && logRes.data && logRes.data.records && logRes.data.records.length > 0) {
+            const latestLog = logRes.data.records[0];
+            task.currentSyncData = {
+              recordCount: latestLog.recordCount || 0,
+              successCount: latestLog.successCount || 0,
+              failedCount: latestLog.failedCount || 0,
+              duration: latestLog.duration || 0,
+              syncTime: latestLog.startTime || task.syncTime,
+              syncStatus: latestLog.syncStatus
+            };
+          } else {
+            task.currentSyncData = {
+              recordCount: 0,
+              successCount: 0,
+              failedCount: 0,
+              duration: 0,
+              syncTime: task.syncTime,
+              syncStatus: task.status
+            };
+          }
+        } catch (error) {
+          console.warn(`获取任务${task.id}的最新同步记录失败:`, error);
+          task.currentSyncData = {
+            recordCount: 0,
+            successCount: 0,
+            failedCount: 0,
+            duration: 0,
+            syncTime: task.syncTime,
+            syncStatus: task.status
+          };
+        }
+      }
+
+      taskList.value = tasks;
     }
   } catch (error) {
     ElMessage.error("加载任务列表失败");
@@ -362,27 +473,109 @@ const handleSyncNow = async (task: SyncTask) => {
   if (!task.id) return;
 
   task.syncing = true;
+  let syncMessage: any = null; // 用于存储消息实例
+
   try {
+    // 显示开始同步提示
+    syncMessage = ElMessage({
+      message: '正在启动数据同步，请稍候...',
+      type: 'info',
+      duration: 0, // 不自动关闭
+      showClose: false
+    });
+
     const res = await executeFeishuDataSync(task.id);
+
+    // 关闭开始同步提示
+    if (syncMessage) {
+      syncMessage.close();
+    }
+
     if (res.success && res.data) {
       const result = res.data as any;
       const totalRecords = result.totalRecords || 0;
       const successRecords = result.successRecords || 0;
       const duration = result.duration || 0;
+      const status = result.status;
 
-      if (result.status === 'success') {
-        ElMessage.success(`同步成功！共同步 ${successRecords}/${totalRecords} 条记录，耗时 ${duration}秒`);
+      if (status === 'success') {
+        ElMessage.success({
+          message: `同步成功！共同步 ${successRecords}/${totalRecords} 条记录，耗时 ${duration}秒`,
+          duration: 5000,
+          showClose: true
+        });
+      } else if (status === 'partial_success') {
+        ElMessage.warning({
+          message: `同步部分完成：${successRecords}/${totalRecords} 条成功，耗时 ${duration}秒`,
+          duration: 5000,
+          showClose: true
+        });
       } else {
-        ElMessage.warning(`同步完成，但有部分失败：${successRecords}/${totalRecords} 条成功`);
+        ElMessage.error({
+          message: `同步失败：${successRecords}/${totalRecords} 条成功，耗时 ${duration}秒`,
+          duration: 5000,
+          showClose: true
+        });
       }
 
-      // 刷新任务列表
-      await loadTaskList();
+      // 立即更新任务的本次同步数据（无需等待列表刷新）
+      task.currentSyncData = {
+        recordCount: totalRecords,
+        successCount: successRecords,
+        failedCount: (totalRecords - successRecords) || 0,
+        duration: duration,
+        syncTime: new Date().toISOString(),
+        syncStatus: status
+      };
+
+      // 注意：累计数据由后端根据增量/全量同步逻辑更新
+      // 这里仅更新本次同步数据，准确的累计数据会在loadTaskList()刷新后从后端获取
+      if (status === 'success') {
+        console.log('同步成功，累计数据已在后端正确更新，即将刷新获取最新数据');
+      }
+
+      // 异步刷新任务列表以获取最新状态（包括后端更新的累计数据）
+      setTimeout(() => {
+        loadTaskList();
+      }, 1000);
     } else {
-      ElMessage.error(res.msg || "同步触发失败");
+      ElMessage.error({
+        message: res.msg || "同步触发失败",
+        duration: 5000,
+        showClose: true
+      });
     }
-  } catch {
-    ElMessage.error("同步触发失败");
+  } catch (error: any) {
+    // 关闭开始同步提示
+    if (syncMessage) {
+      syncMessage.close();
+    }
+
+    // 处理不同类型的错误
+    let errorMessage = "同步触发失败";
+
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      errorMessage = "同步超时，但后台任务可能仍在执行。请稍后刷新查看同步状态。";
+    } else if (error.response?.status === 401) {
+      errorMessage = "登录已过期，请重新登录";
+    } else if (error.response?.status === 500) {
+      errorMessage = "服务器内部错误，请稍后重试";
+    } else if (error.message) {
+      errorMessage = `同步失败：${error.message}`;
+    }
+
+    ElMessage.error({
+      message: errorMessage,
+      duration: 8000,
+      showClose: true
+    });
+
+    console.error('同步错误详情:', error);
+
+    // 即使出错也尝试刷新列表，可能后端已经完成了部分同步
+    setTimeout(() => {
+      loadTaskList();
+    }, 2000);
   } finally {
     task.syncing = false;
   }
@@ -632,20 +825,81 @@ onMounted(() => {
           }
         }
 
-        .sync-info {
-          display: flex;
-          gap: 24px;
+        .sync-stats {
+          margin-top: 16px;
+          padding-top: 16px;
+          border-top: 1px solid #f3f4f6;
 
-          .info-item {
-            .info-label {
-              font-size: 12px;
-              color: #9ca3af;
-            }
+          .stat-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
 
-            .info-value {
-              font-size: 13px;
-              color: #6b7280;
-              font-weight: 500;
+            .stat-item {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              padding: 12px;
+              background: #f9fafb;
+              border-radius: 8px;
+              border: 1px solid #e5e7eb;
+              transition: all 0.2s;
+
+              &:hover {
+                border-color: #d1d5db;
+                background: #f3f4f6;
+              }
+
+              &.cumulative {
+                border-left: 3px solid #6b7280;
+              }
+
+              &.current {
+                border-left: 3px solid #6c5ce7;
+
+                .stat-value {
+                  .success {
+                    color: #10b981;
+                    font-weight: 600;
+                  }
+
+                  .partial {
+                    color: #f59e0b;
+                    font-weight: 600;
+                  }
+
+                  .failed {
+                    color: #ef4444;
+                    font-weight: 600;
+                  }
+                }
+              }
+
+              &.time {
+                border-left: 3px solid #9ca3af;
+              }
+
+              .stat-label {
+                font-size: 11px;
+                color: #6b7280;
+                font-weight: 500;
+                margin-bottom: 4px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              }
+
+              .stat-value {
+                font-size: 16px;
+                font-weight: 600;
+                color: #374151;
+              }
+
+              .stat-duration {
+                font-size: 11px;
+                color: #9ca3af;
+                margin-top: 2px;
+              }
             }
           }
         }
@@ -657,6 +911,47 @@ onMounted(() => {
 .task-detail {
   :deep(.el-descriptions__label) {
     font-weight: 500;
+  }
+
+  .detail-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sync-result-detail-expanded {
+    .result-main {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .result-details {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+
+        .detail-item {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 13px;
+          color: #6b7280;
+
+          i {
+            font-style: normal;
+            font-size: 14px;
+          }
+
+          &.success-item {
+            color: #10b981;
+          }
+
+          &.error-item {
+            color: #ef4444;
+          }
+        }
+      }
+    }
   }
 }
 </style>

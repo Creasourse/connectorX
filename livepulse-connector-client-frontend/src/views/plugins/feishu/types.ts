@@ -95,6 +95,18 @@ export interface Field {
 }
 
 /**
+ * 本次同步数据
+ */
+export interface CurrentSyncData {
+  recordCount: number;      // 本次同步记录总数
+  successCount: number;     // 本次同步成功记录数
+  failedCount: number;      // 本次同步失败记录数
+  duration: number;         // 本次同步耗时（秒）
+  syncTime: string;         // 本次同步时间
+  syncStatus: string;       // 本次同步状态
+}
+
+/**
  * 同步任务
  */
 export interface SyncTask {
@@ -109,6 +121,7 @@ export interface SyncTask {
   isEnabled: number;
   _toggling?: boolean;
   _rawData?: any;
+  currentSyncData?: CurrentSyncData;  // 本次同步数据
 }
 
 /**

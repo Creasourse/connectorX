@@ -135,22 +135,16 @@ onMounted(() => {
           :disabled="app.loading"
           inline-prompt
           active-text="已启用"
-          inactive-text="已停止"
+          inactive-text="已停用"
           @change="changeStatus(app)"
         />
-        <el-tooltip
-          content="请停用插件后再卸载"
-          placement="top"
-          :disabled="app.dockerStatus !== 'running'"
-        >
-          <el-button
-            link
-            type="danger"
-            :disabled="app.dockerStatus === 'running'"
-            @click="handleRemoveApp(app)"
-            >卸载</el-button
-          >
-        </el-tooltip>
+        <!-- 只有停用时才显示卸载按钮 -->
+        <el-button
+          v-if="app.dockerStatus !== 'running'"
+          link
+          type="danger"
+          @click="handleRemoveApp(app)"
+          >卸载</el-button>
         <el-tooltip
           content="请启用插件后再进行配置"
           placement="top"

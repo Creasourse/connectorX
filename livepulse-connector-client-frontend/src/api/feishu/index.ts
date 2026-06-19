@@ -195,11 +195,15 @@ export const deleteFeishuApp = (id: string | number) => {
 
 /**
  * 测试飞书应用连接
+ * 设置较长超时时间（1分钟），需要调用飞书API验证
  */
 export const testFeishuAppConnection = (appId: string, appSecret: string) => {
-  return http.request<ResultBoolean>("post", buildApiPath("/app/test"), {
-    data: { appId, appSecret }
-  });
+  return http.request<ResultBoolean>(
+    "post",
+    buildApiPath("/app/test"),
+    { data: { appId, appSecret } },
+    { timeout: 60000 } // 1分钟超时
+  );
 };
 
 /**
@@ -323,9 +327,15 @@ export const getFeishuDataTableDetail = (id: string | number) => {
 
 /**
  * 同步数据表信息（字段数和记录数）
+ * 设置较长超时时间（3分钟），需要从飞书API获取数据
  */
 export const syncFeishuDataTableInfo = (id: string | number) => {
-  return http.request<ResultSingle>("post", buildApiPath(`/feishuDataTable/syncInfo/${id}`));
+  return http.request<ResultSingle>(
+    "post",
+    buildApiPath(`/feishuDataTable/syncInfo/${id}`),
+    {}, // params
+    { timeout: 180000 } // 3分钟超时
+  );
 };
 
 // ============ 飞书字段 API ============
@@ -363,6 +373,7 @@ export const fetchFieldsFromFeishu = (tableId: string) => {
 
 /**
  * 批量保存字段信息
+ * 设置较长超时时间（2分钟），批量操作可能需要较长时间
  */
 export const batchSaveFeishuFields = (data: {
   feishuDataTableId: number;
@@ -377,9 +388,12 @@ export const batchSaveFeishuFields = (data: {
     sortOrder?: number;
   }>;
 }) => {
-  return http.request<ResultSingle>("post", buildApiPath("/feishuField/batchSave"), {
-    data
-  });
+  return http.request<ResultSingle>(
+    "post",
+    buildApiPath("/feishuField/batchSave"),
+    { data },
+    { timeout: 120000 } // 2分钟超时
+  );
 };
 
 // ============ 数据同步 API ============
@@ -402,11 +416,15 @@ export const getFeishuDataSyncDetail = (id: string | number) => {
 
 /**
  * 保存或更新数据同步任务
+ * 设置较长超时时间（2分钟），保存操作可能需要较长时间
  */
 export const saveOrUpdateFeishuDataSync = (data: any) => {
-  return http.request<ResultSingle>("post", buildApiPath("/feishuDataSync/saveOrUpdate"), {
-    data
-  });
+  return http.request<ResultSingle>(
+    "post",
+    buildApiPath("/feishuDataSync/saveOrUpdate"),
+    { data },
+    { timeout: 120000 } // 2分钟超时
+  );
 };
 
 /**
@@ -418,9 +436,15 @@ export const deleteFeishuDataSync = (id: string | number) => {
 
 /**
  * 立即执行同步
+ * 设置较长超时时间（10分钟），因为数据同步可能需要较长时间
  */
 export const executeFeishuDataSync = (id: string | number) => {
-  return http.request<ResultSingle>("post", buildApiPath(`/feishuDataSync/sync/${id}`));
+  return http.request<ResultSingle>(
+    "post",
+    buildApiPath(`/feishuDataSync/sync/${id}`),
+    {}, // params
+    { timeout: 600000 } // 10分钟超时
+  );
 };
 
 /**
@@ -479,6 +503,37 @@ export const getFeishuSyncLogStatistics = (params?: {
   });
 };
 
+// ============ 数据同步增量字段 API ============
+
+/**
+ * 根据同步任务ID获取增量字段列表
+ */
+export const getFeishuDataSyncIncrementList = (feishuDataSyncId: number) => {
+  return http.request<ResultSingle>("get", buildApiPath(`/feishuDataSyncIncrement/list/${feishuDataSyncId}`));
+};
+
+/**
+ * 保存增量字段配置
+ */
+export const saveFeishuDataSyncIncrementFields = (data: {
+  feishuDataSyncId: number;
+  incrementFields: Array<{
+    fieldId: string;
+    fieldName: string;
+  }>;
+}) => {
+  return http.request<ResultSingle>("post", buildApiPath("/feishuDataSyncIncrement/save"), {
+    data
+  });
+};
+
+/**
+ * 删除增量字段配置
+ */
+export const deleteFeishuDataSyncIncrementFields = (feishuDataSyncId: number) => {
+  return http.request<ResultSingle>("delete", buildApiPath(`/feishuDataSyncIncrement/delete/${feishuDataSyncId}`));
+};
+
 // 导出所有API
 export default {
   // 飞书应用
@@ -527,7 +582,12 @@ export default {
   // 同步日志
   getFeishuSyncLogPageList,
   getFeishuSyncLogDetail,
-  getFeishuSyncLogStatistics
+  getFeishuSyncLogStatistics,
+
+  // 数据同步增量字段
+  getFeishuDataSyncIncrementList,
+  saveFeishuDataSyncIncrementFields,
+  deleteFeishuDataSyncIncrementFields
 };
 
 // ============ 使用说明 ============
